@@ -1,0 +1,6 @@
+Requires Qt5
+Installation:
+1. Unpack to any folder you own
+2. qmake gnome-menu-editor-qt.pro
+3. make
+4. sudo cp gnome-menu-editor /usr/bin/
