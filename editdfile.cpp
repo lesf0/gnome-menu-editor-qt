@@ -18,7 +18,7 @@ EditDFile::EditDFile(QString filename, QString name, QString cats, QWidget *pare
     connect(ui->scbShowMore,SIGNAL(toggled(bool)),this,SLOT(showhidemore(bool)));
     ui->scbShowMore->setChecked(false);
 
-    QList<QLineEdit*> text_fields=this->findChildren<QLineEdit*>(QRegExp("^text*"));
+    QList<QLineEdit*> text_fields=this->findChildren<QLineEdit*>(QRegExp("^text*")); //connect all text fields and checkboxes to handlers
     QList<QCheckBox*> cb_fields=this->findChildren<QCheckBox*>(QRegExp("^cb*"));
     QList<QTextEdit*> ltext_fields=this->findChildren<QTextEdit*>(QRegExp("^ltext*"));
     tf_map=new QMap<QString,QObject*>;
@@ -38,18 +38,18 @@ EditDFile::EditDFile(QString filename, QString name, QString cats, QWidget *pare
         connect(*it,SIGNAL(textChanged()),this,SLOT(teChangesHandler()));
     }
 
-    e_map=new QMap<QString, QMap <QString, QMap<QString,QString> > >;
+    e_map=new QMap<QString, QMap <QString, QMap<QString,QString> > >; //contents of .desktop file
     QString entry=default_entry;
-    (*e_map)[entry][default_locale]["Type"]="Application";
+    (*e_map)[entry][default_locale]["Type"]="Application"; //default initialisation for empty files
 
     if(QFile::exists(filename)){
-        if(filename.left(default_path.size())==default_path){
+        if(filename.left(default_path.size())==default_path){ //if file is in /usr save new file in ~/
             QString filename_new=QDir::homePath()+"/.local"+filename.mid(4);
             QFile::copy(filename,filename_new);
             filename=filename_new;
         }
     }else{
-        if(filename.left(default_path.size())==default_path){
+        if(filename.left(default_path.size())==default_path){ //if file not exists create it in ~/ anyway
             filename=QDir::homePath()+"/.local"+filename.mid(4);
         }
     }
@@ -63,9 +63,9 @@ EditDFile::EditDFile(QString filename, QString name, QString cats, QWidget *pare
             while(!in.atEnd()){
                 QString line=in.readLine();
                 if(line.size()==0 || line[0]=='#'){
-
+                    //comment, do nothing
                 }else if(line[0]=='['){
-                    entry=line;
+                    entry=line; //remember entry and set default locale
                     (*e_map)[entry][default_locale];
                 }else{
                     QString locale_id=default_locale;
@@ -80,26 +80,26 @@ EditDFile::EditDFile(QString filename, QString name, QString cats, QWidget *pare
                     QString value=line.mid(line.indexOf('=')+1);
 
                     if(value.trimmed()!=""){
-                        (*e_map)[entry][locale_id][param]=value;
+                        (*e_map)[entry][locale_id][param]=value; //add value to proper place in array
                     }
                 }
             }
         }
         file->close();
     }else{
-        (*e_map)[entry][default_locale]["Name"]=name;
+        (*e_map)[entry][default_locale]["Name"]=name; //set name and category from args if file is empty
         (*e_map)[entry][default_locale]["Categories"]=cats;
     }
 
     connect(ui->listLocale,SIGNAL(currentTextChanged(QString)),this,SLOT(switchlocale(QString)));
 
-    for(QMap<QString, QMap <QString, QMap<QString,QString> > >::iterator it=e_map->begin();it!=e_map->end();++it){
+    for(QMap<QString, QMap <QString, QMap<QString,QString> > >::iterator it=e_map->begin();it!=e_map->end();++it){ //add entrys
         ui->comboEntry->addItem(it.key());
     }
 
     connect(ui->comboEntry,SIGNAL(currentIndexChanged(QString)),this,SLOT(switchentry(QString)));
     ui->comboEntry->setCurrentIndex(-1);
-    ui->comboEntry->setCurrentIndex(ui->comboEntry->count()-1);
+    ui->comboEntry->setCurrentIndex(ui->comboEntry->count()-1); //select entry and fill everything from emitted signal
 
     connect(ui->buttonExec,SIGNAL(clicked()),this,SLOT(browseButtonHandler()));
     connect(ui->buttonTryExec,SIGNAL(clicked()),this,SLOT(browseButtonHandler()));
@@ -320,7 +320,7 @@ void EditDFile::showhidemore(bool flag){
         ui->comboEntry->hide();
     }
 
-    layout()->setSizeConstraint(QLayout::SetFixedSize);
+    layout()->setSizeConstraint(QLayout::SetFixedSize); //workaround for size changing
 }
 
 void EditDFile::makeHidden(){

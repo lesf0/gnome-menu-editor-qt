@@ -19,27 +19,27 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionQuit,SIGNAL(triggered()),this,SLOT(close()));
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(showaboutmb()));
 
-    cats=new QMap<QString,QMap<QString,QPair<QString, bool> > >;
+    cats=new QMap<QString,QMap<QString,QPair<QString, bool> > >; //contents of all .desktop files is stored here
 
-    QStringList pathes;
+    QStringList pathes; //search pathes of .desktop files
     pathes.append(default_path);
     pathes.append(QDir::homePath()+"/.local/share/applications");
     for(QStringList::Iterator it2=pathes.begin();it2!=pathes.end();++it2){
         for(QDirIterator it(*it2,QDirIterator::Subdirectories);it.hasNext();it.next()){
-            if(QFileInfo(it.filePath()).isFile() && QFileInfo(it.filePath()).suffix()=="desktop"){
+            if(QFileInfo(it.filePath()).isFile() && QFileInfo(it.filePath()).suffix()=="desktop"){ //.desktop file found
                 QFile file(it.filePath());
                 if(file.open(QIODevice::ReadOnly)) {
                     QTextStream in(&file);
-                    QString entry=default_entry;
+                    QString entry=default_entry; //setting defaults to obtain errors on empty files
                     QString name=default_name;
                     QString cat=default_cat;
                     bool hidden=false;
                     while(!in.atEnd()){
                         QString line=in.readLine();
                         if(line.size()==0 || line[0]=='#'){
-
+                            //just skip comment, nothing to do here
                         }else if(line[0]=='['){
-                            entry=line;
+                            entry=line; //remember current entry
                         }else{
                             QString locale_id=default_locale;
                             QString param;
@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
                             }
                             QString value=line.mid(line.indexOf('=')+1);
 
-                            if(locale_id==default_locale && entry==default_entry){
+                            if(locale_id==default_locale && entry==default_entry){ //remember default entry & default locale settings
                                 if(param=="Name"){
                                     name=value;
                                 }else if(param=="Categories"){
@@ -60,12 +60,12 @@ MainWindow::MainWindow(QWidget *parent) :
                                 }else if(param=="Hidden"){
                                     hidden=(value=="true");
                                 }else{
-
+                                    //unnecessary params, skipping
                                 }
                             }
                         }
                     }
-                    int ioc;
+                    int ioc; //get names of all categories, including default category; add filename to every category which includes it
                     while((ioc=cat.indexOf(';'))!=-1){
                         (*cats)[cat.left(ioc).trimmed()][name]=QPair<QString,bool>(it.filePath(),hidden);
                         cat=cat.mid(ioc+1);
@@ -92,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent) :
     for(QMap<QString,QMap<QString,QPair<QString, bool> > >::iterator it=cats->begin();it!=cats->end();++it){
         ui->comboCat->addItem(it.key());
     }
-    ui->comboCat->setCurrentIndex(0);
+    ui->comboCat->setCurrentIndex(0); //workaround to emit signal and fill list properly
 }
 
 MainWindow::~MainWindow(){
@@ -120,9 +120,9 @@ void MainWindow::additem(){
             delete dfile;
         }
         dfile=new EditDFile(filename,name,cat);
-        dfile->writeToFile();
+        dfile->writeToFile(); //create file with choosen name and default params, dfile will be recreated on list item adding/switching
 
-        (*cats)[ui->comboCat->currentText()][name]=QPair<QString,bool>(filename,false);
+        (*cats)[ui->comboCat->currentText()][name]=QPair<QString,bool>(filename,false); //add filename to current and default cats
         (*cats)[default_cat.left(default_cat.size()-1)][name]=QPair<QString,bool>(filename,false);
 
         QListWidgetItem* item=new QListWidgetItem(name);
@@ -134,23 +134,25 @@ void MainWindow::additem(){
 }
 
 void MainWindow::hideitem(){
-    dfile->makeHidden();
-    bool flag=(*cats)[ui->comboCat->currentText()][ui->listCat->currentItem()->text()].second;
+    if(dfile){
+        dfile->makeHidden();
+        bool flag=(*cats)[ui->comboCat->currentText()][ui->listCat->currentItem()->text()].second;
 
-    QString cat=default_cat+dfile->getProp("Categories");
-    int ioc;
-    while((ioc=cat.indexOf(';'))!=-1){
-        (*cats)[cat.left(ioc).trimmed()][ui->listCat->currentItem()->text()].second=!flag;
-        cat=cat.mid(ioc+1);
-    }
+        QString cat=default_cat+dfile->getProp("Categories");
+        int ioc; //switch status in every cat
+        while((ioc=cat.indexOf(';'))!=-1){
+            (*cats)[cat.left(ioc).trimmed()][ui->listCat->currentItem()->text()].second=!flag;
+            cat=cat.mid(ioc+1);
+        }
 
-    if(flag){
-        ui->listCat->currentItem()->setTextColor(Qt::black);
-        ui->listCat->currentItem()->setHidden(false);
-    }else{
-        ui->listCat->currentItem()->setTextColor(Qt::gray);
-        ui->listCat->currentItem()->setHidden(!ui->cbHidden->isChecked());
-        ui->listCat->setCurrentRow(ui->listCat->currentRow()+!ui->cbHidden->isChecked());
+        if(flag){
+            ui->listCat->currentItem()->setTextColor(Qt::black);
+            ui->listCat->currentItem()->setHidden(false);
+        }else{
+            ui->listCat->currentItem()->setTextColor(Qt::gray);
+            ui->listCat->currentItem()->setHidden(!ui->cbHidden->isChecked());
+            ui->listCat->setCurrentRow(ui->listCat->currentRow()+!ui->cbHidden->isChecked()); //switch to next element if current is not aviable
+        }
     }
 }
 
@@ -158,7 +160,7 @@ void MainWindow::switchelem(QString name){
     if(dfile){
         delete dfile;
     }
-    if(!name.isEmpty()){
+    if(!name.isEmpty()){ //workaround for empty categories bug
         dfile=new EditDFile((*cats)[ui->comboCat->currentText()][name].first);
     }else{
         dfile=0;
@@ -166,48 +168,50 @@ void MainWindow::switchelem(QString name){
 }
 
 void MainWindow::execcurelem(){
-    QString name=dfile->getProp("Name");
-    QString cat=default_cat+dfile->getProp("Categories");
-    QString filename=(*cats)[default_cat.left(default_cat.size()-1)][name].first;
-    if(dfile->exec()==QDialog::Accepted){
-        dfile->writeToFile();
+    if(dfile){
+        QString name=dfile->getProp("Name");
+        QString cat=default_cat+dfile->getProp("Categories");
+        QString filename=(*cats)[default_cat.left(default_cat.size()-1)][name].first;
+        if(dfile->exec()==QDialog::Accepted){
+            dfile->writeToFile();
 
-        int ioc;
-        while((ioc=cat.indexOf(';'))!=-1){
-            (*cats)[cat.left(ioc).trimmed()].erase((*cats)[cat.left(ioc).trimmed()].find(name));
-            if (!(*cats)[cat.left(ioc).trimmed()].size()){
-                cats->erase(cats->find(cat.left(ioc).trimmed()));
+            int ioc; //after successfully execution, delete current file info from all cats, and add again
+            while((ioc=cat.indexOf(';'))!=-1){
+                (*cats)[cat.left(ioc).trimmed()].erase((*cats)[cat.left(ioc).trimmed()].find(name));
+                if (!(*cats)[cat.left(ioc).trimmed()].size()){
+                    cats->erase(cats->find(cat.left(ioc).trimmed()));
+                }
+                cat=cat.mid(ioc+1);
             }
-            cat=cat.mid(ioc+1);
+
+            name=dfile->getProp("Name");
+            cat=default_cat+dfile->getProp("Categories");
+            bool hidden=(dfile->getProp("Hidden")=="true");
+
+            while((ioc=cat.indexOf(';'))!=-1){
+                (*cats)[cat.left(ioc).trimmed()][name]=QPair<QString,bool>(filename,hidden);
+                cat=cat.mid(ioc+1);
+            }
+
+            int ci=ui->comboCat->currentIndex();
+
+            ui->comboCat->clear();
+            for(QMap<QString,QMap<QString,QPair<QString, bool> > >::iterator it=cats->begin();it!=cats->end();++it){
+                ui->comboCat->addItem(it.key());
+            }
+
+            ui->comboCat->setCurrentIndex(std::min(ci,ui->comboCat->count()-1)); //workaround for deleting last cat
+
+            int li=0;
+            while(li<ui->listCat->count() && ui->listCat->item(li)->text()!=name){
+                ++li;
+            }
+            if(li==ui->listCat->count()){
+                li=0;
+            }
+            ui->listCat->scrollToItem(ui->listCat->item(li));
+            ui->listCat->setCurrentRow(li);
         }
-
-        name=dfile->getProp("Name");
-        cat=default_cat+dfile->getProp("Categories");
-        bool hidden=(dfile->getProp("Hidden")=="true");
-
-        while((ioc=cat.indexOf(';'))!=-1){
-            (*cats)[cat.left(ioc).trimmed()][name]=QPair<QString,bool>(filename,hidden);
-            cat=cat.mid(ioc+1);
-        }
-
-        int ci=ui->comboCat->currentIndex();
-
-        ui->comboCat->clear();
-        for(QMap<QString,QMap<QString,QPair<QString, bool> > >::iterator it=cats->begin();it!=cats->end();++it){
-            ui->comboCat->addItem(it.key());
-        }
-
-        ui->comboCat->setCurrentIndex(std::min(ci,ui->comboCat->count()-1));
-
-        int li=0;
-        while(li<ui->listCat->count() && ui->listCat->item(li)->text()!=name){
-            ++li;
-        }
-        if(li==ui->listCat->count()){
-            li=0;
-        }
-        ui->listCat->scrollToItem(ui->listCat->item(li));
-        ui->listCat->setCurrentRow(li);
     }
 }
 
@@ -225,7 +229,7 @@ void MainWindow::switchcat(QString cat_id){
         ui->listCat->sortItems();
         ui->listCat->setCurrentItem(ui->listCat->item(0));
 
-        ui->cbHidden->setChecked(!ui->cbHidden->isChecked());
+        ui->cbHidden->setChecked(!ui->cbHidden->isChecked()); //workaround for not working setHidden
         ui->cbHidden->setChecked(!ui->cbHidden->isChecked());
     }
 }
