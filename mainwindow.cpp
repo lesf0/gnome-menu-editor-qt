@@ -197,11 +197,7 @@ void MainWindow::execcurelem(){
             ui->comboCat->addItem(it.key());
         }
 
-<<<<<<< HEAD
         ui->comboCat->setCurrentIndex(std::min(ci,ui->comboCat->count()-1));
-=======
-        ui->comboCat->setCurrentIndex(ci);
->>>>>>> 3d29f2021102e022c37d1b9087950df263b71a42
 
         int li=0;
         while(li<ui->listCat->count() && ui->listCat->item(li)->text()!=name){
