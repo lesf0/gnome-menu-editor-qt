@@ -23,4 +23,4 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     editdfile.ui
 
-CXXFLAGS += -std=c++11
+CPPFLAGS += -std=c++11 -O3
