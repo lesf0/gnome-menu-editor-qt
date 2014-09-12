@@ -23,4 +23,7 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     editdfile.ui
 
-CPPFLAGS += -std=c++11 -O3
+QMAKE_CXXFLAGS -= -O2
+QMAKE_CFLAGS -= -O2
+QMAKE_CXXFLAGS += -std=c++11 -O3
+QMAKE_CFLAGS += -O3

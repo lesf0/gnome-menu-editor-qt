@@ -7,4 +7,6 @@ const QString default_name="<noname>";
 const QString default_cat="*All;";
 const QString default_path="/usr/share/applications/";
 
+//#define time_test
+
 #endif // ENV_H
