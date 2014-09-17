@@ -111,7 +111,17 @@ void MainWindow::switchhiddenshow(bool flag){
 void MainWindow::additem(){
     QString name=QInputDialog::getText(this,"File name","New file name").trimmed();
     if(!name.isEmpty()){
-        QString filename=default_path+name+".desktop";
+        QString name_f=name;
+        name_f.remove("/");
+        if(name_f[0]=='.'){
+            name_f="_"+name_f;
+        }
+        QString filename=default_path+name_f+".desktop";
+        int index=0;
+        while(QFile::exists(filename)){
+            filename=default_path+name_f+QString::number(index)+".desktop";
+            ++index;
+        }
         QString cat="";
         if(ui->comboCat->currentIndex()){
             cat=ui->comboCat->currentText()+';';
