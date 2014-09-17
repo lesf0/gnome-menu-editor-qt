@@ -185,6 +185,9 @@ void MainWindow::execcurelem(){
             }
 
             name=dfile->getProp("Name");
+            if(name.isEmpty()){
+                name=default_name;
+            }
             cat=default_cat+dfile->getProp("Categories");
             bool hidden=(dfile->getProp("Hidden")=="true");
 
