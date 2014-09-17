@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
                             QString value=line.mid(line.indexOf('=')+1);
 
                             if(locale_id==default_locale && entry==default_entry){ //remember default entry & default locale settings
-                                if(param=="Name"){
+                                if(param=="Name" && !value.isEmpty()){
                                     name=value;
                                 }else if(param=="Categories"){
                                     cat+=value;
@@ -170,6 +170,9 @@ void MainWindow::switchelem(QString name){
 void MainWindow::execcurelem(){
     if(dfile){
         QString name=dfile->getProp("Name");
+        if(name.isEmpty()){
+            name=default_name;
+        }
         QString cat=default_cat+dfile->getProp("Categories");
         QString filename=(*cats)[default_cat_name][name].first;
         if(dfile->exec()==QDialog::Accepted){
