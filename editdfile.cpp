@@ -43,13 +43,13 @@ EditDFile::EditDFile(QString filename, QString name, QString cats, QWidget *pare
     (*e_map)[entry][default_locale]["Type"]="Application"; //default initialisation for empty files
 
     if(QFile::exists(filename)){
-        if(filename.left(default_path.size())==default_path){ //if file is in /usr save new file in ~/
+        if(filename.left(sizeof(default_path)-1)==default_path){ //if file is in /usr save new file in ~/
             QString filename_new=QDir::homePath()+"/.local"+filename.mid(4);
             QFile::copy(filename,filename_new);
             filename=filename_new;
         }
     }else{
-        if(filename.left(default_path.size())==default_path){ //if file not exists create it in ~/ anyway
+        if(filename.left(sizeof(default_path)-1)==default_path){ //if file not exists create it in ~/ anyway
             filename=QDir::homePath()+"/.local"+filename.mid(4);
         }
     }

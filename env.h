@@ -1,11 +1,12 @@
 #ifndef ENV_H
 #define ENV_H
 
-const QString default_locale="<default>";
-const QString default_entry="[Desktop Entry]";
-const QString default_name="<noname>";
-const QString default_cat="*All;";
-const QString default_path="/usr/share/applications/";
+#define default_locale "<default>"
+#define default_entry "[Desktop Entry]"
+#define default_name "<noname>"
+#define default_cat "*All;"
+#define default_cat_name "*All"
+#define default_path "/usr/share/applications/"
 
 //#define time_test
 

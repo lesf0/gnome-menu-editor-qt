@@ -123,7 +123,7 @@ void MainWindow::additem(){
         dfile->writeToFile(); //create file with choosen name and default params, dfile will be recreated on list item adding/switching
 
         (*cats)[ui->comboCat->currentText()][name]=QPair<QString,bool>(filename,false); //add filename to current and default cats
-        (*cats)[default_cat.left(default_cat.size()-1)][name]=QPair<QString,bool>(filename,false);
+        (*cats)[default_cat_name][name]=QPair<QString,bool>(filename,false);
 
         QListWidgetItem* item=new QListWidgetItem(name);
         ui->listCat->addItem(item);
@@ -171,7 +171,7 @@ void MainWindow::execcurelem(){
     if(dfile){
         QString name=dfile->getProp("Name");
         QString cat=default_cat+dfile->getProp("Categories");
-        QString filename=(*cats)[default_cat.left(default_cat.size()-1)][name].first;
+        QString filename=(*cats)[default_cat_name][name].first;
         if(dfile->exec()==QDialog::Accepted){
             dfile->writeToFile();
 
