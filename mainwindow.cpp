@@ -87,6 +87,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->buttonDelItem,SIGNAL(clicked()),this,SLOT(hideitem()));
 
+    connect(ui->buttonVisItem,SIGNAL(clicked()),this,SLOT(visitem()));
+
     connect(ui->cbHidden,SIGNAL(toggled(bool)),this,SLOT(switchhiddenshow(bool)));
 
     for(QMap<QString,QMap<QString,QPair<QString, bool> > >::iterator it=cats->begin();it!=cats->end();++it){
@@ -166,12 +168,21 @@ void MainWindow::hideitem(){
     }
 }
 
+void MainWindow::visitem(){
+    if(dfile){
+        dfile->makeVisible();
+    }
+}
+
 void MainWindow::switchelem(QString name){
     if(dfile){
         delete dfile;
     }
     if(!name.isEmpty()){ //workaround for empty categories bug
         dfile=new EditDFile((*cats)[ui->comboCat->currentText()][name].first);
+
+        ui->buttonDelItem->setChecked((dfile->getProp("Hidden")=="true"));
+        ui->buttonVisItem->setChecked((dfile->getProp("NoDisplay")=="true"));
     }else{
         dfile=0;
     }

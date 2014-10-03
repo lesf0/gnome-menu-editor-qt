@@ -18,6 +18,7 @@ public:
     const QString getProp(const QString propName);
     void writeToFile();
     void makeHidden();
+    void makeVisible();
 private:
     Ui::EditDFile *ui;
     QMap<QString,QObject*>* tf_map;

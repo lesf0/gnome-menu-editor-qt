@@ -328,6 +328,11 @@ void EditDFile::makeHidden(){
     this->writeToFile();
 }
 
+void EditDFile::makeVisible(){
+    ui->cbNoDisplay->toggle();
+    this->writeToFile();
+}
+
 const QString EditDFile::getProp(const QString propName){
     return (*e_map)[default_entry][default_locale][propName];
 }

@@ -26,6 +26,7 @@ private slots:
     void execcurelem();
     void additem();
     void hideitem();
+    void visitem();
     void switchhiddenshow(bool flag);
     void showaboutmb();
 };
